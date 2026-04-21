@@ -1,0 +1,62 @@
+# Data Files (Large, local-only)
+train.csv
+casablanca_teleported.csv
+*.parquet
+newyork/*.parquet
+
+# Generated Maps & HTML
+*.html
+
+# Logs & Outputs
+*.log
+logs/
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker (local state)
+.docker/
+
+# MinIO/S3 local data
+minio_data/
+
+# Cassandra local state
+cassandra_data/
+
+# Spark temporary files
+metastore_db/
+spark-warehouse/
+
+# Java
+*.jar
+!flink-*.jar
+
+# Misc
+.env
+.env.local
+config.local.yaml
