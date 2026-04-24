@@ -1,0 +1,32 @@
+# ADR-0001: Kappa Architecture with MinIO + Cassandra
+
+## Status
+Accepted
+
+## Context
+TaaSim needs a scalable storage layer for:
+- Real-time taxi GPS and trip request streams
+- Immutable event archive (replay capability)
+- Fast query access for analytics
+
+## Decision
+1. **MinIO (S3-compatible object storage)**: Stores raw Kafka events in `raw/kafka-archive/`
+2. **Kafka Connect S3 Sink**: Automatically mirrors `raw.gps` and `raw.trips` topics to MinIO
+3. **Cassandra (NoSQL)**: Query-optimized tables partitioned by (city, zone/date_bucket)
+
+## Rationale
+- **Kappa**: Single source of truth (Kafka) + immutable archive (MinIO) eliminates Lambda complexity
+- **Partition by query pattern**: `vehicle_positions(city, zone_id)` enables fast "get all vehicles in zone X"
+- **S3 archive**: Enables event replay and long-term storage
+- **Cassandra clustering by time**: Perfect for time-series queries (recent trips, demand in last hour)
+
+## Consequences
+- ✅ All events retained indefinitely on MinIO
+- ✅ Sub-second latency for zone-based vehicle queries
+- ✅ Natural fit for demand prediction (historical demand_zones table)
+- ⚠️ Requires Flink/Spark job to compute demand_zones from raw trips (Week 3)
+
+## Verification
+- ✅ Kafka topics `raw.gps` and `raw.trips` active
+- ✅ Kafka Connect S3 Sink RUNNING, files in `raw/kafka-archive/`
+- ✅ Cassandra 3 tables deployed and ready
