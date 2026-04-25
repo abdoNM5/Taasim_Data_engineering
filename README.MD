@@ -81,3 +81,10 @@ Week 4 implemented the core intelligence of the platform, computing supply and d
 - **Metrics Computation**: Aggregated the number of distinct active vehicles and pending trip requests per zone to calculate the Supply/Demand ratio.
 - **Real-Time Dashboards**: Connected Cassandra to Grafana to visualize the live status of the 16 Casablanca zones.
 - **Schema Management**: Dynamically altered the Cassandra schema via CQL to match the Flink Job output signatures.
+
+### Stream Processing III — Trip Matcher (Flink Job 3) & API
+
+- **Stateful Matching**: Utilized PyFlink `KeyedProcessFunction` with in-memory state mapping vehicle locations (`processed.gps`) and pending trips (`raw.trips`).
+- **5-Second Fallback Timer**: Engineered a dynamic fallback mechanism using Flink Processing Time Timers. If an exact zone match fails, it waits 5 seconds and gracefully expands the search to adjacent zones, properly calculating and penalizing the ETA.
+- **FastAPI Stub**: Built a real-time HTTP API stub (`api_stub.py`) mimicking the TaaSim client app. It accepts POST reservations, pushes them to Kafka, and reads the matched driver and ETA streams.
+- **End-to-End Delivery**: Persisted the final matched trip assignments, including calculated ETAs and driver IDs, to `taasim.trips` in Cassandra.

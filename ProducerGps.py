@@ -51,7 +51,7 @@ try:
                     producer.send(topic_name, key=row["TAXI_ID"], value=gps_payload)
                     print(f"Sent: {gps_payload}")
                     
-                    time.sleep(0.5) 
+                    time.sleep(0.05) 
                 
             except (json.JSONDecodeError, ValueError, IndexError) as e:
                 continue

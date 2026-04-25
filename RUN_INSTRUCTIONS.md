@@ -69,6 +69,22 @@ python job2_demand_aggregator.py
 ```
 *This job calculates the supply/demand ratio per zone every 30 seconds.*
 
+**Terminal 5 (Job 3 - Trip Matcher):**
+```powershell
+.\flink_env\Scripts\activate
+python job3_trip_matcher.py
+```
+*This job matches trip requests to vehicles dynamically, using a 5-second fallback for adjacent zones.*
+
+## 🌐 Step 6.5: Start the API Stub (Testing)
+To test the end-to-end trip matching, launch the FastAPI server in a new terminal:
+
+**Terminal 6 (API Stub):**
+```powershell
+python api_stub.py
+```
+You can now reserve trips using `curl` and see the Flink engine dynamically assign drivers with ETAs!
+
 ## 📊 Step 7: Visualize in Grafana
 1. Open your browser: [http://localhost:3000](http://localhost:3000)
 2. Login with `admin` / `admin`

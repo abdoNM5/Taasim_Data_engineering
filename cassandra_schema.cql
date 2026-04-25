@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS taasim.trips (
   origin_zone INT,
   destination_zone INT,
   call_type TEXT,
+  matched_taxi TEXT,
+  eta_seconds INT,
+  status TEXT,
   PRIMARY KEY ((city, date_bucket), created_at, trip_id)
 ) WITH CLUSTERING ORDER BY (created_at DESC);
 

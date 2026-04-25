@@ -1,5 +1,8 @@
 import os, urllib.request, sys
 from pathlib import Path
+
+# Force Java and PyFlink to use IPv4 to prevent gRPC Multiplexer hanging up on Windows
+os.environ["_JAVA_OPTIONS"] = "-Djava.net.preferIPv4Stack=true"
 from pyflink.find_flink_home import _find_flink_home
 from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.datastream.connectors.kafka import FlinkKafkaConsumer, FlinkKafkaProducer
