@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "taasim/contracts/processed.gps.schema.json",
+  "title": "processed.gps",
+  "description": "Anonymized and zone-normalized GPS event produced by Job 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_type",
+    "event_time",
+    "ingested_at",
+    "taxi_id",
+    "zone_id",
+    "centroid_lat",
+    "centroid_lon",
+    "speed_kmh",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "GPS_NORMALIZED"
+    },
+    "event_time": {
+      "type": "integer",
+      "description": "Unix epoch seconds from source event timestamp."
+    },
+    "ingested_at": {
+      "type": "integer",
+      "description": "Unix epoch seconds when Job 1 produced this record."
+    },
+    "taxi_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "zone_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16
+    },
+    "zone_name": {
+      "type": "string"
+    },
+    "centroid_lat": {
+      "type": "number",
+      "minimum": 33.4,
+      "maximum": 33.7
+    },
+    "centroid_lon": {
+      "type": "number",
+      "minimum": -7.8,
+      "maximum": -7.4
+    },
+    "speed_kmh": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 150
+    },
+    "status": {
+      "type": "string",
+      "enum": ["AVAILABLE", "ASSIGNED", "OFFLINE"]
+    }
+  }
+}
