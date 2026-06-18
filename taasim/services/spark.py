@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 import os
 import logging
 from typing import Any
-from .config import AppConfig
+from datetime import datetime
+
+from ..core.config import AppConfig
 
 logger = logging.getLogger(__name__)
 
 
 def _import_spark() -> tuple[Any, Any, Any]:
     try:
-        from pyspark.sql import SparkSession
-        from pyspark.sql import Row
+        from pyspark.sql import SparkSession, Row
         from pyspark.ml import PipelineModel
         return SparkSession, Row, PipelineModel
     except ImportError as exc:
@@ -19,7 +22,7 @@ def _import_spark() -> tuple[Any, Any, Any]:
 class SparkService:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
-        self.spark, self.Row, self.PipelineModel = _import_spark()
+        self._SparkSession, self._Row, self._PipelineModel = _import_spark()
         self.spark = self._create_spark_session()
         self.model = self._load_model()
 
@@ -27,8 +30,7 @@ class SparkService:
         os.environ["PYSPARK_SUBMIT_ARGS"] = (
             "--packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 pyspark-shell"
         )
-
-        builder = self.spark.builder.appName(self.config.spark_app_name)
+        builder = self._SparkSession.builder.appName(self.config.spark_app_name)
         builder = builder.config("spark.hadoop.fs.s3a.endpoint", self.config.spark_s3_endpoint)
         builder = builder.config("spark.hadoop.fs.s3a.access.key", self.config.spark_s3_access_key)
         builder = builder.config("spark.hadoop.fs.s3a.secret.key", self.config.spark_s3_secret_key)
@@ -38,10 +40,10 @@ class SparkService:
 
     def _load_model(self) -> Any:
         logger.info("Loading ML model from %s", self.config.spark_model_path)
-        return self.PipelineModel.load(self.config.spark_model_path)
+        return self._PipelineModel.load(self.config.spark_model_path)
 
-    def predict_demand(self, zone_id: int, dt) -> float:
-        row = self.Row(
+    def predict_demand(self, zone_id: int, dt: datetime) -> float:
+        row = self._Row(
             zone_id=float(zone_id),
             hour_of_day=float(dt.hour),
             day_of_week=float(dt.weekday()),
@@ -67,7 +69,7 @@ class DummySparkService:
     def __init__(self, config: AppConfig) -> None:
         logger.info("Initializing DummySparkService for test environment")
 
-    def predict_demand(self, zone_id: int, dt) -> float:
+    def predict_demand(self, zone_id: int, dt: datetime) -> float:
         return 0.0
 
     def stop(self) -> None:

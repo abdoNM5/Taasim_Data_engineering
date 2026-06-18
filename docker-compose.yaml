@@ -74,7 +74,7 @@ services:
   flink-jobmanager:
     build: 
       context: .
-      dockerfile: Dockerfile.flink  # <-- Tells Docker to build your custom PyFlink image
+      dockerfile: docker/Dockerfile.flink  # <-- Tells Docker to build your custom PyFlink image
     container_name: taasim-flink-jm
     ports:
       - "8081:8081"
@@ -88,7 +88,7 @@ services:
   flink-taskmanager:
     build: 
       context: .
-      dockerfile: Dockerfile.flink  # <-- Use the same custom image here
+      dockerfile: docker/Dockerfile.flink  # <-- Use the same custom image here
     container_name: taasim-flink-tm
     depends_on:
       - flink-jobmanager
@@ -171,7 +171,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: docker/Dockerfile.api
     container_name: taasim-api
     ports:
       - "8001:8001"

@@ -5,12 +5,11 @@ This document summarizes the changes made to the repository to improve organizat
 ## 1. Repository Reorganization
 The root directory was cleaned and a structured hierarchy was established on the **`amine`** branch:
 - **`config/`**: Configuration files for Cassandra and Kafka Connect.
-- **`data/`**: Structured data storage (`data/raw/` for original CSVs).
-- **`docker/`**: Relocated `docker-compose.yaml` and `Dockerfile.flink`.
-- **`docs/`**: Centralized documentation (Architecture, Week 2, Week 4, and new Week 5 tasks).
-- **`notebooks/`**: Reorganized Jupyter notebooks.
-- **`scripts/`**: Separated into `jobs/` (Flink/Spark processing) and `producers/` (Kafka data ingestion).
-- **`src/`**: Source code for the backend API.
+- **`docker/`**: Dockerfiles for the API and Flink.
+- **`docs/`**: Centralized documentation and reference materials.
+- **`notebooks/`**: All Jupyter notebooks (data cleaning, analysis, training).
+- **`scripts/`**: Separated into `jobs/` (Spark batch processing) and `producers/` (Kafka data ingestion).
+- **`taasim/`**: Python package — FastAPI backend, Kafka/Spark services, auth, and models.
 
 ## 2. Week 5 Task Extraction
 Key tasks were extracted from the capstone PDF and documented in [docs/week5.md](docs/week5.md). These include:

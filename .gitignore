@@ -22,14 +22,13 @@ __pycache__/
 env/
 venv/
 ENV/
-flink_env/
 *.egg-info/
 dist/
 build/
+.venv
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb_checkpoints
 
 # IDE
 .vscode/
@@ -46,6 +45,7 @@ Thumbs.db
 
 # MinIO/S3 local data
 minio_data/
+cache/
 
 # Cassandra local state
 cassandra_data/
@@ -62,7 +62,3 @@ spark-warehouse/
 .env
 .env.local
 config.local.yaml
-
-flink_env/
-__pycache__/
-*.pyc

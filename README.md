@@ -1,41 +1,76 @@
 # TaaSim Mobility Data Engineering
 
-This repository contains a FastAPI-based TaaSim API stub for ride reservation and demand forecasting, plus supporting tooling for Kafka, Cassandra, MinIO, and Spark.
+A FastAPI-based ride reservation and demand forecasting API, with supporting infrastructure for Kafka, Cassandra, MinIO, Flink, Spark, and Grafana.
 
 ## Quick start
 
-1. Install dependencies:
-   ```bash
-   python3 -m pip install -r requirements.txt
-   ```
+```bash
+# Install dependencies
+python3 -m pip install -r requirements.txt
 
-2. Start the API locally:
-   ```bash
-   cd /home/amine/Taasim_Data_engineering
-   python -m uvicorn taasim.main:app --host 0.0.0.0 --port 8001
-   ```
+# Start the API locally
+python -m uvicorn taasim.main:app --host 0.0.0.0 --port 8001
 
-3. Reserve a trip:
-   ```bash
-   curl -X POST http://localhost:8001/reserve_trip \
-     -H "Content-Type: application/json" \
-     -d '{"rider_id": 1, "origin_zone": 10, "destination_zone": 20, "call_type": "A"}'
-   ```
+# Reserve a trip
+curl -X POST http://localhost:8001/reserve_trip \
+  -H "Content-Type: application/json" \
+  -d '{"rider_id": 1, "origin_zone": 10, "destination_zone": 20, "call_type": "A"}'
 
-4. Get demand forecast:
-   ```bash
-   curl -X POST http://localhost:8001/api/demand/forecast \
-     -H "Content-Type: application/json" \
-     -d '{"zone_id": 1, "datetime": "2026-06-17T12:00:00"}'
-   ```
+# Get demand forecast
+curl -X POST http://localhost:8001/api/demand/forecast \
+  -H "Content-Type: application/json" \
+  -d '{"zone_id": 1, "datetime": "2026-06-17T12:00:00"}'
+```
 
 ## Docker Compose
 
-Use `docker-compose.yaml` to bring up Kafka, Cassandra, MinIO, Flink, Spark, and Grafana.
+```bash
+docker compose up -d
+```
+
+Brings up: Kafka, Cassandra, MinIO, Flink, Spark, Grafana, Kafka Connect, and the API.
 
 ## Project structure
 
-- `src/taasim/` — API package and service helpers
-- `api_stub.py` — legacy entrypoint, preserved for compatibility
-- `Dockerfile.flink` — custom Flink image build definition
-- `docker-compose.yaml` — local deployment stack
+```
+taasim/                      # Python package
+├── main.py                  # App factory (create_app + lifespan)
+├── config.py                # Pydantic-settings (env-driven config)
+├── models.py                # Domain + API schemas (Pydantic)
+├── dependencies.py          # Shared FastAPI dependencies (auth, etc.)
+├── api/                     # HTTP layer
+│   ├── router.py            # Root APIRouter, includes sub-routers
+│   ├── trips.py             # POST /reserve_trip, GET /trip_status/{id}
+│   ├── forecast.py          # POST /api/demand/forecast
+│   └── auth.py              # POST /auth/token
+├── services/                # Business logic
+│   ├── kafka.py             # Kafka producer/consumer + trip consumer loop
+│   └── spark.py             # SparkService (ML model serving)
+└── core/                    # Cross-cutting concerns
+    └── logging.py           # Logging configuration
+
+scripts/
+├── jobs/                    # Spark batch jobs (ETL, KPI analytics)
+└── producers/               # Kafka data producers
+
+config/
+├── cassandra/               # CQL schema definitions
+└── kafka/                   # Kafka Connect connector configs
+
+contracts/                   # Event schemas (JSON Schema)
+notebooks/                   # Jupyter notebooks (EDA, training, analysis)
+docs/                        # Documentation and reference materials
+docker/                      # Dockerfiles (API, Flink)
+tests/                       # API tests
+docker-compose.yaml          # Local deployment stack
+```
+
+## Tech stack
+
+- **API**: FastAPI + Uvicorn (lifespan-managed)
+- **Streaming**: Apache Kafka (KRaft mode) + Kafka Connect
+- **Storage**: Apache Cassandra + MinIO (S3-compatible)
+- **Processing**: Apache Spark (batch ETL + ML) + Apache Flink (stream)
+- **Visualization**: Grafana
+- **Auth**: JWT (optional, disabled by default)
+- **Config**: pydantic-settings v2 (env-driven, `.env` file)
