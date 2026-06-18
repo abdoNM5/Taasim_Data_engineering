@@ -76,5 +76,5 @@ if __name__ == '__main__':
     final_df["CASA_POLYLINE"] = final_df["REAL_POLYLINE"]
     final_df = final_df.drop(columns=["REAL_POLYLINE"])
     
-    final_df.to_csv("casablanca_real_roads_final.csv", index=False)
-    print("Succès ! Le fichier 'casablanca_real_roads_final.csv' est prêt à être envoyé dans Kafka.")
+    final_df.to_csv("storage/data/raw/casablanca_real_roads_final.csv", index=False)
+    print("Succès ! Le fichier 'storage/data/raw/casablanca_real_roads_final.csv' est prêt à être envoyé dans Kafka.")

@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+# 1️⃣ Install system deps FIRST (changes rarely → cached aggressively)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libssl-dev \
+    default-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2️⃣ Set JAVA_HOME so PySpark finds it
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+WORKDIR /app
+
+# 3️⃣ Copy and install Python deps BEFORE copying your code
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 4️⃣ Copy your source code LAST (changes most often)
+COPY . .
+
+EXPOSE 8001
+
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8001"]

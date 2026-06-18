@@ -1,0 +1,11 @@
+FROM flink:1.18-scala_2.12-java11
+
+# Flink is already installed in this image!
+RUN apt-get update -y && \
+    apt-get install -y python3 python3-pip python3-dev net-tools procps && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Only install PyFlink connector (much smaller)
+RUN pip install apache-flink==1.18.0 --no-deps

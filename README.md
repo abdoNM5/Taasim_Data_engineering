@@ -2,33 +2,35 @@
 
 A FastAPI-based ride reservation and demand forecasting API, with supporting infrastructure for Kafka, Cassandra, MinIO, Flink, Spark, and Grafana.
 
-## Quick start
+## Unified Management
+
+The project features a single entrypoint script (`main.py`) to manage all services and pipelines.
 
 ```bash
-# Install dependencies
-python3 -m pip install -r requirements.txt
+# ONE SINGLE COMMAND to start services, wait for readiness, and run the pipeline
+python main.py run
 
-# Start the API locally
-python -m uvicorn taasim.main:app --host 0.0.0.0 --port 8001
+# Alternatively, manage steps individually:
+# Start all services (Infrastructure + API)
+python main.py start
+...
+# Run the data processing pipeline (Data Generation -> ETL -> Analytics)
+python main.py pipeline
 
-# Reserve a trip
-curl -X POST http://localhost:8001/reserve_trip \
-  -H "Content-Type: application/json" \
-  -d '{"rider_id": 1, "origin_zone": 10, "destination_zone": 20, "call_type": "A"}'
+# Check status
+python main.py status
 
-# Get demand forecast
-curl -X POST http://localhost:8001/api/demand/forecast \
-  -H "Content-Type: application/json" \
-  -d '{"zone_id": 1, "datetime": "2026-06-17T12:00:00"}'
+# See logs
+python main.py logs
+
+# Stop everything
+python main.py stop
 ```
 
-## Docker Compose
+## Quick start (Local Development)
 
-```bash
-docker compose up -d
-```
-
-Brings up: Kafka, Cassandra, MinIO, Flink, Spark, Grafana, Kafka Connect, and the API.
+If you prefer to run only the API locally:
+...
 
 ## Project structure
 

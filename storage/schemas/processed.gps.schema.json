@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "taasim/contracts/processed.gps.schema.json",
+  "$id": "taasim/storage/schemas/processed.gps.schema.json",
   "title": "processed.gps",
   "description": "Anonymized and zone-normalized GPS event produced by Job 1.",
   "type": "object",

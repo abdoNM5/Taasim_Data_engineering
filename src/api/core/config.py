@@ -7,7 +7,7 @@ from typing import List
 
 class AppConfig(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-
+    spark_master_url: str = Field("spark://spark-master:7077", alias="SPARK_MASTER_URL")
     app_name: str = Field("TaaSim API", alias="APP_NAME")
     environment: str = Field("development", alias="APP_ENV")
     log_level: str = Field("INFO", alias="LOG_LEVEL")

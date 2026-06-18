@@ -3,8 +3,8 @@ import os
 
 from fastapi.testclient import TestClient
 
-from taasim.core.config import AppConfig
-from taasim.main import create_app
+from api.core.config import AppConfig
+from api.main import create_app
 
 os.environ["APP_ENV"] = "test"
 

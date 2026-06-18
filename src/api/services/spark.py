@@ -27,15 +27,28 @@ class SparkService:
         self.model = self._load_model()
 
     def _create_spark_session(self) -> Any:
-        os.environ["PYSPARK_SUBMIT_ARGS"] = (
-            "--packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 pyspark-shell"
+        logger.info("Connecting to Spark master at %s", self.config.spark_master_url)
+
+        builder = (
+            self._SparkSession.builder
+            .appName(self.config.spark_app_name)
+            .master(self.config.spark_master_url)          # ← connect to YOUR cluster
+            .config("spark.submit.deployMode", "client")
+            # S3A / MinIO
+            .config("spark.hadoop.fs.s3a.endpoint",          self.config.spark_s3_endpoint)
+            .config("spark.hadoop.fs.s3a.access.key",        self.config.spark_s3_access_key)
+            .config("spark.hadoop.fs.s3a.secret.key",        self.config.spark_s3_secret_key)
+            .config("spark.hadoop.fs.s3a.path.style.access", str(self.config.spark_s3_path_style_access).lower())
+            .config("spark.hadoop.fs.s3a.impl",              "org.apache.hadoop.fs.s3a.S3AFileSystem")
+            # S3A jars
+            .config(
+                "spark.jars.packages",
+                "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262",
+            )
+            # Don't need a full local Spark UI
+            .config("spark.ui.enabled", "false")
         )
-        builder = self._SparkSession.builder.appName(self.config.spark_app_name)
-        builder = builder.config("spark.hadoop.fs.s3a.endpoint", self.config.spark_s3_endpoint)
-        builder = builder.config("spark.hadoop.fs.s3a.access.key", self.config.spark_s3_access_key)
-        builder = builder.config("spark.hadoop.fs.s3a.secret.key", self.config.spark_s3_secret_key)
-        builder = builder.config("spark.hadoop.fs.s3a.path.style.access", self.config.spark_s3_path_style_access)
-        builder = builder.config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+
         return builder.getOrCreate()
 
     def _load_model(self) -> Any:
@@ -67,10 +80,10 @@ class SparkService:
 
 class DummySparkService:
     def __init__(self, config: AppConfig) -> None:
-        logger.info("Initializing DummySparkService for test environment")
+        logger.info("Initializing DummySparkService")
 
     def predict_demand(self, zone_id: int, dt: datetime) -> float:
         return 0.0
 
     def stop(self) -> None:
-        logger.debug("DummySparkService.stop called")
+        pass

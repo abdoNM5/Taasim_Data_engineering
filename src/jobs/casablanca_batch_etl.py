@@ -15,7 +15,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Path to existing data
-input_path = "data/raw/casablanca_real_roads_final.csv"
+input_path = "storage/data/raw/casablanca_real_roads_final.csv"
 output_path = "s3a://curated/trips/"
 
 # Define UDF to parse polyline and extract points

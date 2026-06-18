@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import AppConfig
 from .core.logging import configure_logging
-from .api.router import api_router
+from .routes import api_router
 from .services.kafka import (
     DummyKafkaConsumer,
     DummyKafkaProducer,

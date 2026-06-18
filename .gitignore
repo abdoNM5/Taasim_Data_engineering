@@ -1,4 +1,5 @@
 # Data Files (Large, local-only)
+storage/data/
 train.csv
 casablanca_teleported.csv
 *.parquet
