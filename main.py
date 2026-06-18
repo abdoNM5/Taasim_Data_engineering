@@ -67,22 +67,19 @@ def stop_services():
     log("Services stopped.", GREEN)
 
 def run_pipeline():
-    """Run the data generation and ETL pipeline."""
-    log("Starting Data Pipeline (Generation -> ETL -> Analytics)...")
+    log("Starting Data Pipeline...")
     
     scripts = [
-        ("Data Preparation", "src/producers/Generate_Real_Routes.py"),
         ("Batch ETL", "src/jobs/casablanca_batch_etl.py"),
         ("Analytics & KPIs", "src/jobs/mobility_kpi_analyzer.py")
     ]
     
     for name, path in scripts:
-        if os.path.exists(path):
-            log(f"Running {name}...", YELLOW)
-            # Run in a separate process to avoid env pollution
-            run_command([sys.executable, path])
-        else:
-            log(f"Skip: {path} not found.", RED)
+        log(f"Running {name}...", YELLOW)
+        run_command([
+            "docker", "compose", "exec", "taasim-api",
+            "python", path
+        ])
     
     log("Pipeline execution finished.", GREEN)
 

@@ -57,7 +57,7 @@ services:
     image: minio/minio:latest
     container_name: taasim-minio
     ports:
-      - "9000:9000"
+      - "9002:9000"
       - "9001:9001"
     environment:
       - MINIO_ROOT_USER=admin
@@ -76,7 +76,7 @@ services:
       mc alias set myminio http://minio:9000 admin password123;
       mc mb myminio/raw --ignore-existing;
       mc mb myminio/curated --ignore-existing;
-      mc mb myminio/ml --ignore-existing;
+      mc mb myminio/mls --ignore-existing;
       mc mb myminio/kafka-archive --ignore-existing;
       exit 0;
       "    
@@ -120,6 +120,8 @@ services:
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     environment:
       - SPARK_MASTER_HOST=spark-master
+    volumes:
+      - ./storage/jars:/storage/jars   # ← add
 
   # 5b. SPARK - Worker
   spark-worker:
@@ -131,6 +133,8 @@ services:
     environment:
       - SPARK_WORKER_CORES=2
       - SPARK_WORKER_MEMORY=2g
+    volumes:
+      - ./storage/jars:/storage/jars   # ← add
 
   # 6. GRAFANA
   grafana:
@@ -197,7 +201,7 @@ services:
       - MINIO_ACCESS_KEY=admin
       - MINIO_SECRET_KEY=password123
       - SPARK_MASTER_URL=spark://spark-master:7077   # ← add
-      - SPARK_MODEL_PATH=s3a://ml/models/demand_v1/
+      - SPARK_MODEL_PATH=s3a://mls/models/demand_v1/
       - SPARK_S3_ENDPOINT=http://minio:9000
       - SPARK_S3_ACCESS_KEY=admin
       - SPARK_S3_SECRET_KEY=password123
@@ -207,7 +211,24 @@ services:
       - spark-master                                  # ← add
     networks:
       - default
+    volumes:
+      - ./storage/jars:/storage/jars   # ← add
 
+  jupyter:
+    image: quay.io/jupyter/pyspark-notebook:spark-3.5.0  # ← correct registry + tag
+    container_name: spark-notebook
+    volumes:
+      - ./:/home/jovyan/work
+    ports:
+      - "8888:8888"
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - APACHE_SPARK_VERSION=3.5.1
+      - JUPYTER_TOKEN=taasim123        # ← pick any password you want
+
+      
+    networks:
+      - default
 networks:
   default:
     name: taasim-network
