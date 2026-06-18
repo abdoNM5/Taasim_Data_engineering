@@ -14,11 +14,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy S3A jars into PySpark's actual jars dir (must be after pip install)
-ENV SPARK_HOME=/usr/local/lib/python3.11/site-packages/pyspark
-
-COPY storage/jars/hadoop-aws-3.3.4.jar ${SPARK_HOME}/jars/
-COPY storage/jars/aws-java-sdk-bundle-1.12.262.jar ${SPARK_HOME}/jars/
 COPY . .
 
 EXPOSE 8001
