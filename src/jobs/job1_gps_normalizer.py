@@ -33,7 +33,8 @@ elif os.name == "posix":
 
 flink_lib = Path(_find_flink_home()) / "lib"
 jars = {
-    "flink-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/3.0.2-1.18/flink-connector-kafka-3.0.2-1.18.jar",
+    "flink-sql-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.0.2-1.18/flink-sql-connector-kafka-3.0.2-1.18.jar",
+    "flink-connector-cassandra_2.12-3.2.0-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-cassandra_2.12/3.2.0-1.18/flink-connector-cassandra_2.12-3.2.0-1.18.jar",
 }
 for jar_name, url in jars.items():
     dest = flink_lib / jar_name
@@ -45,6 +46,8 @@ os.environ["PYFLINK_CLIENT_EXECUTABLE"] = sys.executable
 os.environ["PYFLINK_PYTHON_EXECUTABLE"] = sys.executable
 
 env = StreamExecutionEnvironment.get_execution_environment()
+for jar_name in jars.keys():
+    env.add_jars(f"file://{flink_lib / jar_name}")
 env.set_python_executable(sys.executable)
 env.set_parallelism(1)
 

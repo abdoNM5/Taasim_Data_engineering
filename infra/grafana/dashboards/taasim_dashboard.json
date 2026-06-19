@@ -19,7 +19,8 @@
         {
           "refId": "A",
           "target": "SELECT count(*) FROM vehicle_positions WHERE status='available' ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "datasource": "Cassandra",
+          "rawQuery": true
         }
       ]
     },
@@ -36,7 +37,8 @@
         {
           "refId": "A",
           "target": "SELECT sum(pending_requests) FROM demand_zones ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "datasource": "Cassandra",
+          "rawQuery": true
         }
       ]
     },
@@ -53,27 +55,72 @@
         {
           "refId": "A",
           "target": "SELECT window_start as time, zone_id, ratio FROM demand_zones ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "datasource": "Cassandra",
+          "rawQuery": true
         }
       ]
     },
     {
-      "type": "geomap",
-      "title": "Live Vehicle Map",
-      "gridPos": {
-        "h": 12,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "target": "SELECT latitude as lat, longitude as lon, taxi_id, status FROM vehicle_positions ALLOW FILTERING",
-          "datasource": "Cassandra"
-        }
-      ]
+  "type": "geomap",
+  "title": "Live Vehicle Map",
+  "transformations": [
+    {
+      "id": "merge",
+      "options": {}
+    }
+  ],
+  "options": {
+    "view": {
+      "id": "coords",
+      "lat": 33.59,
+      "lon": -7.6,
+      "zoom": 12
     },
+    "layers": [
+      {
+        "type": "markers",
+        "name": "Vehicles",
+        "config": {
+          "style": {
+            "color": { "fixed": "green" },
+            "size": { "fixed": 6 },
+            "symbol": { "fixed": "img/icons/marker/circle.svg" }
+          }
+        }
+      }
+    ],
+    "tooltip": { "mode": "details" }
+  },
+  "fieldConfig": {
+    "defaults": {},
+    "overrides": [
+      {
+        "matcher": { "id": "byName", "options": "lat" },
+        "properties": [
+          { "id": "custom.hidden", "value": false }
+        ]
+      },
+      {
+        "matcher": { "id": "byName", "options": "lon" },
+        "properties": [
+          { "id": "custom.hidden", "value": false }
+        ]
+      }
+    ]
+  },
+  "targets": [
+    {
+      "refId": "A",
+      "datasource": {
+        "type": "hadesarchitect-cassandra-datasource",
+        "uid": "PE3297E400DFF12FE"
+      },
+      "target": "SELECT latitude as lat, longitude as lon, taxi_id, status FROM vehicle_positions LIMIT 1000",
+      "rawQuery": true,
+      "queryType": "query"
+    }
+  ]
+},
     {
       "type": "timeseries",
       "title": "ML Forecast vs Actual Demand",
@@ -86,8 +133,9 @@
       "targets": [
         {
           "refId": "A",
-          "target": "SELECT window_start as time, sum(pending_requests) as actual, sum(forecast_demand) as predicted FROM demand_zones GROUP BY window_start ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "target": "SELECT window_start as time, pending_requests as actual, forecast_demand as predicted FROM demand_zones ALLOW FILTERING",
+          "datasource": "Cassandra",
+          "rawQuery": true
         }
       ]
     },
@@ -109,22 +157,26 @@
         {
           "refId": "A",
           "target": "SELECT count(trip_id) as total_requests FROM trips ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "datasource": "Cassandra",
+          "rawQuery": true
         },
         {
           "refId": "B",
-          "target": "SELECT count(trip_id) as exact_matches FROM trips WHERE status=MATCHED_EXACT ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "target": "SELECT count(trip_id) as exact_matches FROM trips WHERE status='MATCHED_EXACT' ALLOW FILTERING",
+          "datasource": "Cassandra",
+          "rawQuery": true
         },
         {
           "refId": "C",
-          "target": "SELECT count(trip_id) as fallback_matches FROM trips WHERE status=MATCHED_FALLBACK ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "target": "SELECT count(trip_id) as fallback_matches FROM trips WHERE status='MATCHED_FALLBACK' ALLOW FILTERING",
+          "datasource": "Cassandra",
+          "rawQuery": true
         },
         {
           "refId": "D",
-          "target": "SELECT count(trip_id) as unfulfilled FROM trips WHERE status=UNFULFILLED ALLOW FILTERING",
-          "datasource": "Cassandra"
+          "target": "SELECT count(trip_id) as unfulfilled FROM trips WHERE status='UNFULFILLED' ALLOW FILTERING",
+          "datasource": "Cassandra",
+          "rawQuery": true
         }
       ]
     }

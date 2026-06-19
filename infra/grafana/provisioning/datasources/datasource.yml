@@ -2,12 +2,13 @@ apiVersion: 1
 
 datasources:
   - name: Cassandra
-    type: hadoesarchitect-cassandra-datasource
+    type: hadesarchitect-cassandra-datasource
     access: proxy
     url: cassandra:9042
     isDefault: true
     jsonData:
-      keyspace: system
+      keyspace: taasim
       user: cassandra
+      consistency: ONE
     secureJsonData:
       password: cassandra

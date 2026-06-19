@@ -35,7 +35,8 @@ elif os.name == "posix":
 
 flink_lib = Path(_find_flink_home()) / "lib"
 jars = {
-    "flink-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/3.0.2-1.18/flink-connector-kafka-3.0.2-1.18.jar",
+    "flink-sql-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.0.2-1.18/flink-sql-connector-kafka-3.0.2-1.18.jar",
+    "flink-connector-cassandra_2.12-3.2.0-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-cassandra_2.12/3.2.0-1.18/flink-connector-cassandra_2.12-3.2.0-1.18.jar",
 }
 for jar_name, url in jars.items():
     dest = flink_lib / jar_name
@@ -47,6 +48,8 @@ os.environ["PYFLINK_CLIENT_EXECUTABLE"] = sys.executable
 os.environ["PYFLINK_PYTHON_EXECUTABLE"] = sys.executable
 
 env = StreamExecutionEnvironment.get_execution_environment()
+for jar_name in jars.keys():
+    env.add_jars(f"file://{flink_lib / jar_name}")
 env.set_python_executable(sys.executable)
 env.set_parallelism(1)
 
@@ -109,34 +112,29 @@ keyed_stream = event_time_stream.key_by(lambda record: int(record[1]))
 # Using TumblingEventTimeWindows for PyFlink 1.18 compatibility
 windowed_stream = keyed_stream.window(TumblingEventTimeWindows.of(Time.seconds(30)))
 
-class DemandAccumulator:
-    def __init__(self):
-        self.vehicle_ids = set()
-        self.trip_ids = set()
-        self.zone_id = None
-
 class DemandAggregateFunction(AggregateFunction):
     def create_accumulator(self):
-        return DemandAccumulator()
+        # [vehicle_ids, trip_ids, zone_id]
+        return [set(), set(), None]
     
     def add(self, value, accumulator):
         event_type, zone_id, _, entity_id, _ = value
-        accumulator.zone_id = zone_id
+        accumulator[2] = zone_id
         if event_type == "vehicle":
-            accumulator.vehicle_ids.add(entity_id)
+            accumulator[0].add(entity_id)
         elif event_type == "trip":
-            accumulator.trip_ids.add(entity_id)
+            accumulator[1].add(entity_id)
         return accumulator
     
     def get_result(self, accumulator):
-        vehicle_count = len(accumulator.vehicle_ids)
-        trip_count = len(accumulator.trip_ids)
+        vehicle_count = len(accumulator[0])
+        trip_count = len(accumulator[1])
         ratio = trip_count / max(vehicle_count, 1)
-        return (accumulator.zone_id, vehicle_count, trip_count, float(ratio))
+        return (accumulator[2], vehicle_count, trip_count, float(ratio))
     
     def merge(self, acc_a, acc_b):
-        acc_a.vehicle_ids.update(acc_b.vehicle_ids)
-        acc_a.trip_ids.update(acc_b.trip_ids)
+        acc_a[0].update(acc_b[0])
+        acc_a[1].update(acc_b[1])
         return acc_a
 
 class DemandWindowFunction(WindowFunction):

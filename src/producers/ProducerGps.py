@@ -15,7 +15,7 @@ producer = KafkaProducer(
 )
 
 topic_name = 'raw.gps'
-csv_file_path = 'casablanca_real_roads_final.csv' 
+csv_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../storage/data/raw/casablanca_real_roads_final.csv'))
 
 print(f" Starting ADVANCED live GPS stream to Kafka topic: '{topic_name}'...")
 try:

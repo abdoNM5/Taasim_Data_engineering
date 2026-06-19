@@ -112,7 +112,11 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
-        taskmanager.numberOfTaskSlots: 2
+        taskmanager.numberOfTaskSlots: 3
+        taskmanager.memory.process.size: 2400m
+        taskmanager.memory.task.off-heap.size: 128m
+        taskmanager.memory.framework.off-heap.size: 256m
+        taskmanager.memory.jvm-metaspace.size: 512m
     volumes:
       - ./src/jobs:/opt/flink/jobs
 
@@ -138,7 +142,8 @@ services:
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     environment:
       - SPARK_WORKER_CORES=2
-      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_MEMORY=1g
+      - SPARK_WORKER_WEBUI_PORT=8081
     volumes:
       - ./storage/jars:/storage/jars   # ← add
 

@@ -161,7 +161,7 @@ def wait_for_services(timeout=180):
 
 
 # ── Full pipeline ────────────────────────────────────────────────────────────
-TOTAL_PIPELINE_STEPS = 4
+TOTAL_PIPELINE_STEPS = 5
 
 def run_pipeline():
     banner("RUNNING FULL DATA PIPELINE")
@@ -254,6 +254,35 @@ def run_pipeline():
     else:
         log_success(f"Demand spike injected ({elapsed:.1f}s).")
         results.append(("Event Injector", "OK", elapsed))
+
+    # ── Step 5: Verify Jobs and S3 Transactions ──────────────────────────
+    log_step(5, TOTAL_PIPELINE_STEPS, "Verifying Jobs and S3 Transactions")
+    t0 = time.time()
+    
+    log_info("Checking running Flink jobs...")
+    flink_result = run_command(["docker", "compose", "exec", "flink-jobmanager", "flink", "list"], check=False, capture_output=True)
+    if flink_result.returncode == 0:
+        print(f"\n{CYAN}--- Flink Jobs ---{RESET}")
+        for line in flink_result.stdout.strip().split("\\n"):
+            if "WARNING" not in line and line.strip(): # omit warnings and empty lines
+                print(f"    {line}")
+        print(f"{CYAN}------------------{RESET}\\n")
+    
+    log_info("Checking MinIO (S3) bucket files...")
+    minio_result = run_command(["docker", "compose", "exec", "minio", "sh", "-c", "find /data -type f | grep -v '.minio.sys'"], check=False, capture_output=True)
+    if minio_result.returncode == 0:
+        files = minio_result.stdout.strip().split("\\n")
+        files = [f for f in files if f.strip()]
+        print(f"\n{CYAN}--- S3 / MinIO Files ({len(files)} files found) ---{RESET}")
+        for f in files[:15]: # Print up to 15 files
+            print(f"    {f}")
+        if len(files) > 15:
+            print(f"    ... and {len(files) - 15} more files")
+        print(f"{CYAN}---------------------------------------------{RESET}\\n")
+        
+    elapsed = time.time() - t0
+    log_success(f"Verification complete ({elapsed:.1f}s).")
+    results.append(("Verification", "OK", elapsed))
 
     # ── Summary Report ───────────────────────────────────────────────────
     total_elapsed = time.time() - pipeline_start

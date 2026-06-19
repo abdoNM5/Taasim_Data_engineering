@@ -34,7 +34,8 @@ elif os.name == "posix":
 
 flink_lib = Path(_find_flink_home()) / "lib"
 jars = {
-    "flink-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/3.0.2-1.18/flink-connector-kafka-3.0.2-1.18.jar",
+    "flink-sql-connector-kafka-3.0.2-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.0.2-1.18/flink-sql-connector-kafka-3.0.2-1.18.jar",
+    "flink-connector-cassandra_2.12-3.2.0-1.18.jar": "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-cassandra_2.12/3.2.0-1.18/flink-connector-cassandra_2.12-3.2.0-1.18.jar",
 }
 for jar_name, url in jars.items():
     dest = flink_lib / jar_name
@@ -46,6 +47,8 @@ os.environ["PYFLINK_CLIENT_EXECUTABLE"] = sys.executable
 os.environ["PYFLINK_PYTHON_EXECUTABLE"] = sys.executable
 
 env = StreamExecutionEnvironment.get_execution_environment()
+for jar_name in jars.keys():
+    env.add_jars(f"file://{flink_lib / jar_name}")
 env.set_python_executable(sys.executable)
 env.set_parallelism(1)
 
@@ -54,13 +57,13 @@ print("Configuring Checkpointing (RocksDB disabled for Windows stability)...")
 # Note: EmbeddedRocksDBStateBackend has native memory access violations on Windows PyFlink 1.18.
 # We comment it out for local testing so the job actually runs, but the code is here for production/Linux.
 # env.set_state_backend(EmbeddedRocksDBStateBackend())
-env.enable_checkpointing(60000, CheckpointingMode.EXACTLY_ONCE)
-checkpoint_config = env.get_checkpoint_config()
-# Store checkpoints in a local directory
-ckpt_path = os.path.abspath("cache/checkpoints/job3")
-if not os.path.exists(ckpt_path):
-    os.makedirs(ckpt_path)
-checkpoint_config.set_checkpoint_storage_dir(f"file:///{ckpt_path.replace(os.sep, '/')}")
+# Checkpointing disabled for local Docker because it requires a shared file system between JM and TM
+# env.enable_checkpointing(60000, CheckpointingMode.EXACTLY_ONCE)
+# checkpoint_config = env.get_checkpoint_config()
+# ckpt_path = os.path.abspath("cache/checkpoints/job3")
+# if not os.path.exists(ckpt_path):
+#     os.makedirs(ckpt_path)
+# checkpoint_config.set_checkpoint_storage_dir(f"file:///{ckpt_path.replace(os.sep, '/')}")
 # -----------------------------------------------
 
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaOffsetsInitializer
@@ -263,22 +266,28 @@ class TripMatcherFunction(KeyedProcessFunction):
 matched_trips_json = keyed_stream.process(TripMatcherFunction(), output_type=Types.STRING())
 
 def format_for_cassandra(record_str):
-    record = json.loads(record_str)
-    return (
-        record["city"], 
-        record["date_bucket"], 
-        int(record["created_at"]), 
-        str(record["trip_id"]), 
-        int(record["rider_id"]), 
-        int(record["origin_zone"]), 
-        int(record["destination_zone"]), 
-        str(record["call_type"]),
-        str(record["matched_taxi"]),
-        int(record["eta_seconds"]),
-        str(record["status"])
-    )
+    try:
+        record = json.loads(record_str)
+        rider_id = record.get("rider_id", 0)
+        if isinstance(rider_id, str) and "RIDER-SPIKE-" in rider_id:
+            rider_id = int(rider_id.replace("RIDER-SPIKE-", ""))
+        return [(
+            record["city"], 
+            record["date_bucket"], 
+            int(record["created_at"]), 
+            str(record["trip_id"]), 
+            int(rider_id), 
+            int(record["origin_zone"]), 
+            int(record["destination_zone"]), 
+            str(record["call_type"]),
+            str(record["matched_taxi"]),
+            int(record["eta_seconds"]),
+            str(record["status"])
+        )]
+    except Exception:
+        return []
 
-cassandra_stream = matched_trips_json.map(
+cassandra_stream = matched_trips_json.flat_map(
     format_for_cassandra,
     output_type=Types.TUPLE([
         Types.STRING(), Types.STRING(), Types.LONG(), Types.STRING(), Types.INT(), 

@@ -36,7 +36,7 @@ def inject_demand_spike():
         trip_id = f"SPIKE-{uuid.uuid4().hex[:8]}"
         payload = {
             "trip_id": trip_id,
-            "rider_id": f"RIDER-SPIKE-{random.randint(1000, 9999)}",
+            "rider_id": random.randint(10000, 99999),
             "origin_zone": origin,
             "destination_zone": destination,
             "call_type": "A",
