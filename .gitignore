@@ -1,9 +1,9 @@
 # Data Files (Large, local-only)
-train.csv
-casablanca_teleported.csv
+*.csv
 *.parquet
-newyork/*.parquet
 *.graphml
+*.json
+*.zip
 
 # Generated Maps & HTML
 *.html
@@ -65,4 +65,4 @@ config.local.yaml
 
 flink_env/
 __pycache__/
-*.pyc
+*.pyc  
