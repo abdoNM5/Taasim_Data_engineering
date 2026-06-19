@@ -33,6 +33,8 @@ services:
       - CASSANDRA_DC=Casablanca
       - CASSANDRA_RACK=Rack1
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=100M
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "describe cluster"]
       interval: 15s
@@ -94,6 +96,8 @@ services:
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
+    volumes:
+      - ./src/jobs:/opt/flink/jobs
 
   # 4b. FLINK - Task Manager
   flink-taskmanager:
@@ -109,6 +113,8 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - ./src/jobs:/opt/flink/jobs
 
   # 5. SPARK - Master (official Apache image)
   spark-master:
@@ -148,6 +154,8 @@ services:
       - GF_INSTALL_PLUGINS=hadesarchitect-cassandra-datasource
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - cassandra
   # 7. KAFKA CONNECT (Custom image with S3 Sink Connector)

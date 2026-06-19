@@ -2,6 +2,9 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, count, avg, hour, from_unixtime, to_date, lit
 import time
 
+import os
+os.environ["PYSPARK_SUBMIT_ARGS"] = "--packages org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262,com.datastax.spark:spark-cassandra-connector_2.12:3.5.0 pyspark-shell"
+
 # Initialize Spark Session with Cassandra support
 spark = SparkSession.builder \
     .appName("MobilityKPIAnalyzer") \
@@ -10,6 +13,7 @@ spark = SparkSession.builder \
     .config("spark.hadoop.fs.s3a.access.key", "admin") \
     .config("spark.hadoop.fs.s3a.secret.key", "password123") \
     .config("spark.hadoop.fs.s3a.path.style.access", True) \
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
 
 # Path to curated data in MinIO

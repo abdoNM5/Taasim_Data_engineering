@@ -48,7 +48,7 @@ class SparkService:
                     .config("spark.hadoop.fs.s3a.path.style.access", "true")
                     .config("spark.ui.enabled", "false")
                     .config("spark.driver.memory", "512m")
-                    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262")
+                    .config("spark.driver.extraClassPath", "/storage/jars/hadoop-aws-3.3.4.jar:/storage/jars/aws-java-sdk-bundle-1.12.262.jar")
                     .getOrCreate()
                 )
                 logger.info("Local Spark session created successfully")

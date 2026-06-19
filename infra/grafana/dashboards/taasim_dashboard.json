@@ -1,0 +1,134 @@
+{
+  "title": "TaaSim Live Operations Dashboard",
+  "tags": [
+    "taasim",
+    "mobility"
+  ],
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Active Vehicles",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT count(*) FROM vehicle_positions WHERE status='available' ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Pending Requests",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT sum(pending_requests) FROM demand_zones ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Demand Heatmap (Trend per Zone)",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT window_start as time, zone_id, ratio FROM demand_zones ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    },
+    {
+      "type": "geomap",
+      "title": "Live Vehicle Map",
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT latitude as lat, longitude as lon, taxi_id, status FROM vehicle_positions ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "ML Forecast vs Actual Demand",
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT window_start as time, sum(pending_requests) as actual, sum(forecast_demand) as predicted FROM demand_zones GROUP BY window_start ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "title": "Trip Funnel",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "target": "SELECT count(trip_id) as total_requests FROM trips ALLOW FILTERING",
+          "datasource": "Cassandra"
+        },
+        {
+          "refId": "B",
+          "target": "SELECT count(trip_id) as exact_matches FROM trips WHERE status=MATCHED_EXACT ALLOW FILTERING",
+          "datasource": "Cassandra"
+        },
+        {
+          "refId": "C",
+          "target": "SELECT count(trip_id) as fallback_matches FROM trips WHERE status=MATCHED_FALLBACK ALLOW FILTERING",
+          "datasource": "Cassandra"
+        },
+        {
+          "refId": "D",
+          "target": "SELECT count(trip_id) as unfulfilled FROM trips WHERE status=UNFULFILLED ALLOW FILTERING",
+          "datasource": "Cassandra"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}
